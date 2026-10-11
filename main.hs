@@ -16,7 +16,7 @@ sampleTransactions =
   , Transaction "2023-12-27" "Travel"   24.02   "Uber to conference"
   , Transaction "2023-12-27" "Travel"   34.52   "Uber from conference"
   , Transaction "2023-12-28" "Food"   62.45   "5 star meal in Paris"
-  , Transaction "2023-01-31" "Travel"   24.02   "Flight back home"
+  , Transaction "2023-01-31" "Travel"   544.02   "Flight back home"
   , Transaction "2024-01-03" "Food"   362.73   "Team dinner"
   ]
 
