@@ -1,4 +1,3 @@
--- Won't compile until filterbyMinAmount and mapping functions are done.
 data Transaction = Transaction
   { tDate     :: String
   , tCategory :: String
@@ -11,20 +10,33 @@ sampleTransactions =
   [ Transaction "2024-03-01" "Food"   12.50  "Lunch at cafe"
   , Transaction "2024-03-02" "Travel" 120.00 "Taxi and train"
   , Transaction "2024-03-04" "Food"   7.80   "Coffee"
+  , Transaction "2024-01-02" "Living"   100.00   "AirBNB"
+  , Transaction "2024-12-22" "Food"   63.32   "Team Dinner"
+  , Transaction "2025-12-26" "Travel"   644.92   "Flight to Paris"
+  , Transaction "2023-12-27" "Travel"   24.02   "Uber to conference"
+  , Transaction "2023-12-27" "Travel"   34.52   "Uber from conference"
+  , Transaction "2023-12-28" "Food"   62.45   "5 star meal in Paris"
+  , Transaction "2023-01-31" "Travel"   24.02   "Flight back home"
+  , Transaction "2024-01-03" "Food"   362.73   "Team dinner"
   ]
 
+--Filters by Category
 filterByCategory :: String -> [Transaction] -> [Transaction]
 filterByCategory cat trsctn = filter (\t -> tCategory t == cat) trsctn 
 
--- Add filterbyMin
+--Filters by Minimum Amount
+filterByMinAmount :: Double -> [Transaction] -> [Transaction]
+filterByMinAmount amount trsctn = filter (\t -> tAmount t >= amount) trsctn
 
--- Summarize data by category
-{- 1: Sort by category 
-   2: Grouped by category (ensure all categories are grouped with eachother)
-   3: Pair category name with the sum of it's group (output is a tuple)
--}
+--Filters by Date
+filterByDate :: String -> [Transaction] -> [Transaction]
+filterByDate date trsctn = filter (\t -> tDate t == date) trsctn
 
-formatTransactions :: [Transaction] -> String
+
+
+-- Formatted PDF CODE add yours above this! 
+
+{- formatTransactions :: [Transaction] -> String
 formatTransactions txs =
   unlines (header : map formatRow txs)
   where
@@ -40,4 +52,4 @@ main = do
   putStrLn "Food transactions over 10:"
   putStrLn (formatTransactions bigFood)
   putStrLn "Totals by category:"
-  print (totalByCategory sampleTransactions)
+  print (totalByCategory sampleTransactions) -}
