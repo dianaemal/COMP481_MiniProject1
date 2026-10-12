@@ -1,3 +1,7 @@
+import Data.List (sortBy, groupBy, maximumBy)
+import Data.Ord (comparing)
+import Data.Function (on)
+
 data Transaction = Transaction
   { tDate     :: String
   , tCategory :: String
@@ -32,7 +36,34 @@ filterByMinAmount amount trsctn = filter (\t -> tAmount t >= amount) trsctn
 filterByDate :: String -> [Transaction] -> [Transaction]
 filterByDate date trsctn = filter (\t -> tDate t == date) trsctn
 
+-- Explicit recursion + pattern matching
+sumAmounts :: [Transaction] -> Double
+sumAmounts []     = 0
+sumAmounts (t:ts) = tAmount t + sumAmounts ts
 
+-- Sort 
+groupByCategory :: [Transaction] -> [[Transaction]]
+groupByCategory txs = groupBy ((==) `on` tCategory) sorted
+  where sorted = sortBy (comparing tCategory) txs
+
+-- Total per category
+totalByCategory :: [Transaction] -> [(String, Double)]
+totalByCategory txs = map summarize (groupByCategory txs)
+  where summarize grp = (tCategory (head grp), sumAmounts grp)
+
+-- Number of transactions per category
+countByCategory :: [Transaction] -> [(String, Int)]
+countByCategory txs = map summarize (groupByCategory txs)
+  where summarize grp = (tCategory (head grp), length grp)
+
+-- Largest transaction
+largestTransaction :: [Transaction] -> Maybe Transaction
+largestTransaction [] = Nothing
+largestTransaction txs = Just (maximumBy (comparing tAmount) txs)
+
+-- Overall total using foldr
+overallTotal :: [Transaction] -> Double
+overallTotal = foldr (\t acc -> tAmount t + acc) 0
 
 -- Formatted PDF CODE add yours above this! 
 
