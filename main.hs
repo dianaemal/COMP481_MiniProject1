@@ -136,3 +136,26 @@ printSection :: String -> String -> IO ()
 printSection title body = do
   putStrLn ("== " ++ title ++ " ==")
   putStrLn body
+
+
+
+ 
+-- combine the filters and summaries to answer real questions:
+main :: IO ()
+main = do
+  let allTxs     = sampleTransactions
+      bigFood    = filterByMinAmount 10 (filterByCategory "Food" allTxs)
+      bigTravel  = filterByMinAmount 100 (filterByCategory "Travel" allTxs)
+      sameDay    = filterByDate "2023-12-27" allTxs
+ 
+  printSection "All transactions" (formatTransactions allTxs)
+  printSection "Food transactions of 10.00 or more" (formatTransactions bigFood)
+  printSection "Travel transactions of 100.00 or more" (formatTransactions bigTravel)
+  printSection "Transactions on 2023-12-27" (formatTransactions sameDay)
+  printSection "Totals and counts by category" (formatSummary allTxs)
+ 
+  putStrLn "== Largest transaction =="
+  case largestTransaction allTxs of
+    Nothing -> putStrLn "(no transactions)"
+    Just t  -> putStr (formatTransactions [t])
+ 
