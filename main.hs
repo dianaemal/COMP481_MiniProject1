@@ -65,22 +65,74 @@ largestTransaction txs = Just (maximumBy (comparing tAmount) txs)
 overallTotal :: [Transaction] -> Double
 overallTotal = foldr (\t acc -> tAmount t + acc) 0
 
--- Formatted PDF CODE add yours above this! 
 
-{- formatTransactions :: [Transaction] -> String
+
+-- Formatting and queries 
+
+ 
+-- Pad a string with spaces on the right so columns line up.
+-- If the text is already longer than the width, it is left as is.
+padRight :: Int -> String -> String
+padRight n s = s ++ replicate (n - length s) ' '
+ 
+-- Pad on the left, used to right-align numbers.
+padLeft :: Int -> String -> String
+padLeft n s = replicate (n - length s) ' ' ++ s
+ 
+-- Show a money amount with exactly 2 decimals (12.5 -> "12.50").
+-- This also hides floating-point noise like 508.79999999999995.
+formatMoney :: Double -> String
+formatMoney = printf "%.2f"
+
+
+-- transactions as an aligned table:
+
+-- Column widths come from the data, so long notes or categories
+-- never break the layout.
+formatTransactions :: [Transaction] -> String
+formatTransactions [] = "(no transactions)\n"
 formatTransactions txs =
-  unlines (header : map formatRow txs)
+  unlines (header : divider : map formatRow txs)
   where
-    header = "Date       | Category   | Amount  | Note"
-    formatRow t = tDate t ++ " | "
-               ++ tCategory t ++ " | "
-               ++ show (tAmount t) ++ " | "
+    dateW   = maximum (length "Date"     : map (length . tDate) txs)
+    catW    = maximum (length "Category" : map (length . tCategory) txs)
+    amtW    = maximum (length "Amount"   : map (length . formatMoney . tAmount) txs)
+ 
+    header  = padRight dateW "Date" ++ " | "
+           ++ padRight catW "Category" ++ " | "
+           ++ padLeft amtW "Amount" ++ " | Note"
+    divider = replicate (length header + 4) '-'
+ 
+    formatRow t = padRight dateW (tDate t) ++ " | "
+               ++ padRight catW (tCategory t) ++ " | "
+               ++ padLeft amtW (formatMoney (tAmount t)) ++ " | "
                ++ tNote t
-
-main :: IO ()
-main = do
-  let bigFood = filterByMinAmount 10 (filterByCategory "Food" sampleTransactions)
-  putStrLn "Food transactions over 10:"
-  putStrLn (formatTransactions bigFood)
-  putStrLn "Totals by category:"
-  print (totalByCategory sampleTransactions) -}
+ 
+-- Category totals and counts as one table.
+-- Uses a list comprehension to pair each total with its count.
+formatSummary :: [Transaction] -> String
+formatSummary txs =
+  unlines (header : divider : rows ++ [divider, footer])
+  where
+    totals = totalByCategory txs
+    counts = countByCategory txs
+    -- Both lists come from groupByCategory, so they are in the same order
+    combined = [ (cat, total, n) | ((cat, total), (_, n)) <- zip totals counts ]
+ 
+    catW = maximum (length "Category" : map (length . fst) totals)
+    amtW = maximum (length "Total" : map (length . formatMoney . snd) totals
+                    ++ [length (formatMoney (overallTotal txs))])
+ 
+    header  = padRight catW "Category" ++ " | " ++ padLeft amtW "Total" ++ " | Count"
+    divider = replicate (length header) '-'
+    rows    = [ padRight catW cat ++ " | " ++ padLeft amtW (formatMoney total)
+                ++ " | " ++ show n
+              | (cat, total, n) <- combined ]
+    footer  = padRight catW "ALL" ++ " | " ++ padLeft amtW (formatMoney (overallTotal txs))
+              ++ " | " ++ show (length txs)
+ 
+-- Print a heading followed by a table, with a blank line after.
+printSection :: String -> String -> IO ()
+printSection title body = do
+  putStrLn ("== " ++ title ++ " ==")
+  putStrLn body
