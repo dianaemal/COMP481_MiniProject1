@@ -1,6 +1,7 @@
 import Data.List (sortBy, groupBy, maximumBy)
 import Data.Ord (comparing)
 import Data.Function (on)
+import Text.Printf (printf)
 
 data Transaction = Transaction
   { tDate     :: String
